@@ -5,6 +5,9 @@
 */
 
 class ButtonsUI {
+    private _container: HTMLDivElement;
+    private _buttons: { start: HTMLButtonElement; wobble: HTMLButtonElement; voice: HTMLButtonElement };
+
     constructor() {
         this._container = document.createElement("div");
         this._container.style.display = "flex";
@@ -17,10 +20,11 @@ class ButtonsUI {
         };
 
         this._buttons.start.addEventListener("didResume", event => {
+            // @ts-ignore
             event.target.parentElement.removeChild(event.target);
         });
         this._buttons.start.addEventListener("click", event => {
-            event.target.dispatchEvent(new CustomEvent("resume", {
+            event.target!.dispatchEvent(new CustomEvent("resume", {
                 bubbles : true,
             }));
 
@@ -31,13 +35,13 @@ class ButtonsUI {
         return this._container;
     }
 
-    _createButton(buttonName, isParameter = false, parameterPath) {
+    _createButton(buttonName: string, isParameter = false, parameterPath: string | undefined = undefined) {
         const button = document.createElement("button");
                 button.id = buttonName;
-                button.value = true;
+                button.value = "true";
                 button.innerText = (isParameter? "disable":'') + buttonName;
                 button.style.width = "100%";
-                button.style.flex = 1;
+                button.style.flex = "1";
                 button.style.margin = "2px";
                 button.style.borderRadius = "20px";
                 button.style.backgroundColor = "pink";
@@ -46,6 +50,7 @@ class ButtonsUI {
 
             if(isParameter) {
                 button.addEventListener("click", event => {
+                    // @ts-ignore
                     button.value = (button.value == "false");
 
                     const prefix = (button.value == "true")?
