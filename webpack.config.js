@@ -5,7 +5,7 @@ const whichFile = process.env.APP || "component";
 module.exports = {
     entry: {
         app : {
-            "component" : './script/component.js',
+            "component" : './script/component.ts',
             "pink-trombone" : './script/audio/nodes/pinkTrombone/processors/WorkletProcessor.ts',
         }[whichFile]
         
@@ -25,18 +25,11 @@ module.exports = {
     },
     module: {
         rules: [{
-            test: /\.js?$/,
-            exclude: /node_modules/,
-            loader: 'babel-loader',
-            query: {
-                presets: ['@babel/env']
-            }
-        }, {
             test: /\.ts$/,
             loader: "ts-loader"
         }]
     },
     resolve: {
-        extensions: [".ts", ".js"]
+        extensions: [".ts"]
     }
 }

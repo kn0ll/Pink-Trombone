@@ -3,26 +3,35 @@
         start/stop for the pinkTromboneNode
 */
 
-import {} from "./audio/nodes/constantSource/AudioNode"
-import {} from "./audio/nodes/noise/AudioNode";
-import {} from "./audio/nodes/pinkTrombone/AudioNode.ts";
+// @ts-nocheck
+import createNoise from "./audio/nodes/noise/AudioNode";
+import PinkTromboneNode from "./audio/nodes/pinkTrombone/AudioNode";
 
-window.AudioContext = window.AudioContext || window.webkitAudioContext;
+type Constriction = any;
 
 class PinkTrombone {
-    addModules(audioContext) {
+    private audioContext: AudioContext;
+    public loadPromise: Promise<AudioContext>;
+    private _noise?: AudioBufferSourceNode;
+    private _aspirateFilter?: BiquadFilterNode;
+    private _fricativeFilter?: BiquadFilterNode;
+    private _pinkTromboneNode?: PinkTromboneNode;
+    private _gain?: GainNode;
+
+    private addModules(audioContext: AudioContext) {
         if(audioContext.audioWorklet !== undefined) {
             //return audioContext.audioWorklet.addModule("./script/audio/nodes/pinkTrombone/processors/WorkletProcessor.js")
             return audioContext.audioWorklet.addModule("./pink-trombone-worklet-processor.min.js");
         }
         else {
-            return new Promise((resolve, reject) => {
+            return new Promise<void>((resolve, reject) => {
                 resolve();
             });
         }
     }
 
-    constructor(audioContext) {
+    constructor(audioContext: AudioContext) {
+        this.audioContext = audioContext;
         this.loadPromise = 
             this.addModules(audioContext)
                 .then(() => {
@@ -32,8 +41,8 @@ class PinkTrombone {
                 });
     }
 
-    setupAudioGraph() {
-        this._noise = this.audioContext.createNoise();
+    private setupAudioGraph() {
+        this._noise = createNoise(this.audioContext);
 
         this._aspirateFilter = this.audioContext.createBiquadFilter();
                 this._aspirateFilter.type = "bandpass";
@@ -45,7 +54,7 @@ class PinkTrombone {
             this._fricativeFilter.frequency.value = 1000;
             this._fricativeFilter.Q.value = 0.5;
 
-        this._pinkTromboneNode = this.audioContext.createPinkTromboneNode();
+        this._pinkTromboneNode = new PinkTromboneNode(this.audioContext);
 
         this._noise.connect(this._aspirateFilter);
             this._aspirateFilter.connect(this._pinkTromboneNode.noise);
@@ -62,37 +71,33 @@ class PinkTrombone {
         return this._pinkTromboneNode._parameters;
     }
 
-    connect() {
-        return this._gain.connect(...arguments);
+    public connect() {
+        return this._gain!.connect(...arguments);
     }
-    disconnect() {
-        return this._gain.disconnect(...arguments);
+    public disconnect() {
+        return this._gain!.disconnect(...arguments);
     }
 
-    start() {
-        this._gain.gain.value = 1;
+    public start() {
+        this._gain!.gain.value = 1;
     }
-    stop() {
-        this._gain.gain.value = 0;
+    public stop() {
+        this._gain!.gain.value = 0;
     }
 
     get constrictions() {
-        return this._pinkTromboneNode.constrictions;
+        return this._pinkTromboneNode!.constrictions;
     }
-    newConstriction() {
-        return this._pinkTromboneNode.newConstriction(...arguments);
+    public newConstriction() {
+        return this._pinkTromboneNode!.newConstriction(...arguments);
     }
-    removeConstriction(constriction) {
-        this._pinkTromboneNode.removeConstriction(constriction);
+    public removeConstriction(constriction: Constriction) {
+        this._pinkTromboneNode!.removeConstriction(constriction);
     }
 
-    getProcessor() {
-        return this._pinkTromboneNode.getProcessor();
+    public getProcessor() {
+        return this._pinkTromboneNode!.getProcessor();
     }
-}
-
-window.AudioContext.prototype.createPinkTrombone = function() {
-    return new PinkTrombone(this);
 }
 
 export default PinkTrombone;

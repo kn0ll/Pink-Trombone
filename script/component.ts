@@ -3,10 +3,9 @@
         *
 */
 
-import {} from "./PinkTrombone.js";
-import PinkTromboneUI from "./graphics/PinkTromboneUI.ts";
-
-window.AudioContext = window.AudioContext || window.webkitAudioContext;
+// @ts-nocheck
+import PinkTrombone from "./PinkTrombone";
+import PinkTromboneUI from "./graphics/PinkTromboneUI";
 
 class PinkTromboneElement extends HTMLElement {
     constructor() {
@@ -205,8 +204,8 @@ class PinkTromboneElement extends HTMLElement {
         }
     }
 
-    setAudioContext(audioContext = new window.AudioContext()) {
-        this.pinkTrombone = audioContext.createPinkTrombone();
+    setAudioContext(audioContext = new AudioContext()) {
+        this.pinkTrombone = new PinkTrombone(audioContext);
 
         this.loadPromise = this.pinkTrombone.loadPromise
             .then(audioContext => {

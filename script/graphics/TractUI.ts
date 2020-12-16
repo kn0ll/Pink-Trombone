@@ -563,13 +563,13 @@ class TractUI {
         });
     }
 
-    _getTouchIdentifier(event: MouseEvent | Touch) {
+    private _getTouchIdentifier(event: MouseEvent | Touch) {
         return window.Touch !== undefined && (event instanceof Touch)
             ? event.identifier
             : -1;
     }
 
-    _startEvent(event: MouseEvent | Touch) {
+    private _startEvent(event: MouseEvent | Touch) {
         const touchIdentifier = this._getTouchIdentifier(event);
 
         if(this._touchConstrictionIndices[touchIdentifier] == undefined) {
@@ -591,7 +591,7 @@ class TractUI {
             }
         }
     }
-    _moveEvent(event: MouseEvent | Touch) {
+    private _moveEvent(event: MouseEvent | Touch) {
         const touchIdentifier = this._getTouchIdentifier(event);
 
         if(this._touchConstrictionIndices[touchIdentifier] !== undefined) {
@@ -614,7 +614,7 @@ class TractUI {
             }
         }
     }
-    _endEvent(event: MouseEvent | Touch) {
+    private _endEvent(event: MouseEvent | Touch) {
         const touchIdentifier = this._getTouchIdentifier(event);
         
         if(this._touchConstrictionIndices[touchIdentifier] !== undefined) {
