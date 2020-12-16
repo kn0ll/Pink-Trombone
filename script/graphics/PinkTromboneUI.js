@@ -4,7 +4,7 @@
 */
 
 import TractUI from "./TractUI.js";
-import GlottisUI from "./GlottisUI.js";
+import GlottisUI from "./GlottisUI.ts";
 import ButtonsUI from "./ButtonsUI.js";
 
 class PinkTromboneUI {

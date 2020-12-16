@@ -4,15 +4,33 @@
         set actual frequency range
 */
 
-Math.clamp = function(value, min = 0, max = 1) {
-    return value < min?
-        min :
-        value < max?
-            value :
-            max;
+import clamp from "../math/clamp";
+
+type UnknownEvent = any;
+
+interface Frequency {
+    min: number;
+    max: number;
+    range: number;
+    interpolate: (interpolation: number) => number;
 }
 
+interface EventCallbackParameters {
+    frequency: number;
+    loudness: number;
+    tenseness: number;
+}
+
+const clampOne = (number: number) => clamp(number, 0, 1);
+
 class GlottisUI {
+    private _frequency: Frequency;
+    private _isActive: boolean;
+    private _alwaysVoice: boolean;
+    private _container: HTMLDivElement;
+    private _slider: HTMLDivElement;
+    private _touchIdentifier?: number;
+
     constructor() {
         this._frequency = {
             min : 20,
@@ -36,7 +54,7 @@ class GlottisUI {
         
         this._slider = document.createElement("div");
             this._slider.style.position = "relative";
-            this._slider.style.flex = 0;
+            this._slider.style.flex = "0";
             this._slider.style.width = "20px";
             this._slider.style.height = "20px";
             this._slider.style.borderRadius = "20px";
@@ -128,7 +146,7 @@ class GlottisUI {
                 }));
         });
 
-        this._container.addEventListener("message", event => {
+        this._container.addEventListener("message", (event: UnknownEvent) => {
             if(event.detail.type == "toggleButton") {
                 if(event.detail.parameterName == "voice") {
                     this._alwaysVoice = event.detail.newValue == "true";
@@ -165,13 +183,13 @@ class GlottisUI {
                         render : true,
                     },
                 });
-                event.target.dispatchEvent(customEvent);
+                event.target!.dispatchEvent(customEvent);
             });
         });
 
 
         // EventListeners for Getting Parameters
-        this._container.addEventListener("didGetParameter", event => {
+        this._container.addEventListener("didGetParameter", (event: UnknownEvent) => {
             if(event.detail.render == true) {
                 const parameterName = event.detail.parameterName;
                 const value = event.detail.value;
@@ -180,12 +198,12 @@ class GlottisUI {
                     var interpolation;
 
                     if(parameterName == "frequency") {
-                        interpolation = Math.clamp(((value-this._frequency.min)/this._frequency.range));
-                        this._slider.style.left = interpolation * this._container.offsetWidth - (this._slider.offsetWidth/2);
+                        interpolation = clampOne(((value-this._frequency.min)/this._frequency.range));
+                        this._slider.style.left = String(interpolation * this._container.offsetWidth - (this._slider.offsetWidth/2));
                     }
                     else {
                         interpolation = 1 - ((Math.acos(1 - value) / (Math.PI*0.5)));
-                        this._slider.style.top = interpolation * this._container.offsetHeight - (this._slider.offsetHeight/2);
+                        this._slider.style.top = String(interpolation * this._container.offsetHeight - (this._slider.offsetHeight/2));
                     }
                 }    
             }
@@ -197,18 +215,18 @@ class GlottisUI {
         return this._container;
     }
 
-    _eventCallback(event) {
+    _eventCallback(event: MouseEvent | Touch) {
         if(this._isActive) {
             const interpolation = {
-                vertical : Math.clamp((event.pageY - this._container.offsetTop)/this._container.offsetHeight, 0, 0.99),
-                horizontal : Math.clamp((event.pageX - this._container.offsetLeft)/this._container.offsetWidth, 0, 0.99),
+                vertical : clamp((event.pageY - this._container.offsetTop)/this._container.offsetHeight, 0, 0.99),
+                horizontal : clamp((event.pageX - this._container.offsetLeft)/this._container.offsetWidth, 0, 0.99),
             };
 
             const frequency = this._frequency.interpolate(interpolation.horizontal);
             const tenseness = 1 - Math.cos((1 - interpolation.vertical) * Math.PI * 0.5);
             const loudness = Math.pow(tenseness, 0.25);
 
-            const parameters = {
+            const parameters: EventCallbackParameters = {
                 frequency : frequency,
                 tenseness : tenseness,
                 loudness : loudness,
@@ -219,7 +237,7 @@ class GlottisUI {
                     bubbles : true,
                     detail : {
                         parameterName : parameterName,
-                        newValue : parameters[parameterName],
+                        newValue : parameters[parameterName as keyof EventCallbackParameters],
                     },
                 }));
             });

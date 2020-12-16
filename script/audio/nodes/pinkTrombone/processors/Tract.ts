@@ -3,8 +3,8 @@
         using tongue as a k-rate constriction
 */
 
-import clamp from "../../../math/clamp";
-import interpolate from "../../../math/interpolate";
+import clamp from "../../../../math/clamp";
+import interpolate from "../../../../math/interpolate";
 import Nose from "./Nose";
 import Transient from "./Transient";
 

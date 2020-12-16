@@ -3,7 +3,7 @@
         *
 */
 
-import clamp from "../../../math/clamp";
+import clamp from "../../../../math/clamp";
 import SimplexNoise from "./SimplexNoise";
 
 class Glottis {
