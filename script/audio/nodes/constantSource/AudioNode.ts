@@ -3,8 +3,8 @@
         define custom value setters
 */
 
-import clamp from "../../math/clamp";
-import interpolate from "../../math/interpolate";
+import clamp from "../../math/clamp.ts";
+import interpolate from "../../math/interpolate.ts";
 
 declare global {
     interface Window {

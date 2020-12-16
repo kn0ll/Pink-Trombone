@@ -1,4 +1,4 @@
-import clamp from "./clamp";
+import clamp from "./clamp.ts";
 
 export default function interpolate(interpolation: number, from: number, to: number) {
     interpolation = clamp(interpolation, 0, 1);

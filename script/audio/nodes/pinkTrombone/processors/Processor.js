@@ -3,7 +3,7 @@
         add "precision" property to iterate this.tract.process
 */
 
-import Glottis from "./Glottis.js";
+import Glottis from "./Glottis.ts";
 import Tract from "./Tract.js";
 
 class Processor {

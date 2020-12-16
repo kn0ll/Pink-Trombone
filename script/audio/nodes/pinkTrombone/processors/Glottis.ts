@@ -3,18 +3,22 @@
         *
 */
 
-Math.clamp = function(value, min, max) {
-    if(value <= min)
-        return min;
-    else if (value < max)
-        return value;
-    else
-        return max;
-}
-
-import SimplexNoise from "./SimplexNoise.js";
+import clamp from "../../../math/clamp.ts";
+import SimplexNoise from "./SimplexNoise.ts";
 
 class Glottis {
+    private noise: SimplexNoise;
+    private coefficients: {
+      alpha: number;
+      Delta: number;
+      E0: number;
+      epsilon: number;
+      omega: number;
+      shift: number;
+      Te: number;
+    };
+    private startSeconds: number;
+
     constructor() {
         this.noise = new SimplexNoise();
 
@@ -31,7 +35,7 @@ class Glottis {
         this.startSeconds = 0;
     }
 
-    process(parameterSamples, sampleIndex, bufferLength, seconds) {
+    public process(parameterSamples: any, sampleIndex: number, bufferLength: number, seconds: number ) {
 
         const intensity = parameterSamples.intensity;
         const loudness = parameterSamples.loudness;
@@ -94,51 +98,46 @@ class Glottis {
         return outputSample;
     }
 
-    update() {
+    public update() {
         
     }
 
-    _updateCoefficients(tenseness = 0) {
+    private _updateCoefficients(tenseness = 0) {
 
-        const R = {};
-            R.d = Math.clamp(3*(1-tenseness), 0.5, 2.7);
-            R.a = -0.01 + 0.048*R.d;
-            R.k = 0.224 + 0.118*R.d;
-            R.g = (R.k/4)*(0.5+1.2*R.k)/(0.11*R.d-R.a*(0.5+1.2*R.k));
+        const d = clamp(3*(1-tenseness), 0.5, 2.7);
+        const a = -0.01 + 0.048*d;
+        const k = 0.224 + 0.118*d;
+        const g = (k/4)*(0.5+1.2*k)/(0.11*d-a*(0.5+1.2*k));
 
-        const T = {};
-            T.a = R.a;
-            T.p = 1/(2*R.g);
-            T.e = T.p + T.p*R.k;
+        const p = 1/(2*g);
+        const e = p + p*k;
 
-        this.coefficients.epsilon = 1/T.a;
-        this.coefficients.shift = Math.exp(-this.coefficients.epsilon * (1-T.e));
+        this.coefficients.epsilon = 1/a;
+        this.coefficients.shift = Math.exp(-this.coefficients.epsilon * (1-e));
         this.coefficients.Delta = 1 - this.coefficients.shift;
 
-        const integral = {};
-            integral.RHS = ((1/this.coefficients.epsilon) * (this.coefficients.shift-1) + (1-T.e) * this.coefficients.shift) / this.coefficients.Delta;
-            integral.total = {};
-                integral.total.lower = -(T.e - T.p)/2 + integral.RHS;
-                integral.total.upper = -integral.total.lower;
+        const RHS = ((1/this.coefficients.epsilon) * (this.coefficients.shift-1) + (1-e) * this.coefficients.shift) / this.coefficients.Delta;
+        const lower = -(e - p)/2 + RHS;
+        const upper = -lower;
+
+        this.coefficients.omega = Math.PI/p;
         
-        this.coefficients.omega = Math.PI/T.p;
-        
-        const s = Math.sin(this.coefficients.omega * T.e);
-        const y = -Math.PI * s * integral.total.upper / (T.p*2);
+        const s = Math.sin(this.coefficients.omega * e);
+        const y = -Math.PI * s * upper / (p*2);
         const z = Math.log(y);
 
-        this.coefficients.alpha = z/(T.p/2 - T.e);
-        this.coefficients.E0 = -1 / (s*Math.exp(this.coefficients.alpha*T.e));
-        this.coefficients.Te = T.e;
+        this.coefficients.alpha = z/(p/2 - e);
+        this.coefficients.E0 = -1 / (s*Math.exp(this.coefficients.alpha*e));
+        this.coefficients.Te = e;
     }
 
-    _getNormalizedWaveform(interpolation) {
+    private _getNormalizedWaveform(interpolation: number) {
         return (interpolation > this.coefficients.Te)?
             (-Math.exp(-this.coefficients.epsilon * (interpolation-this.coefficients.Te)) + this.coefficients.shift)/this.coefficients.Delta :
             this.coefficients.E0 * Math.exp(this.coefficients.alpha*interpolation) * Math.sin(this.coefficients.omega * interpolation);
     }
 
-    _getNoiseModulator(interpolation) {
+    private _getNoiseModulator(interpolation: number) {
         const angle = 2*Math.PI*interpolation;
         const amplitude = Math.sin(angle);
         const positiveAmplitude = Math.max(0, amplitude);
