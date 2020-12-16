@@ -4,7 +4,7 @@
 */
 
 import Nose from "./Nose";
-import Transient from "./Transient.js";
+import Transient from "./Transient";
 
 Math.interpolate = function(interpolation, from, to) {
     return (from * (1-interpolation)) + (to * (interpolation))

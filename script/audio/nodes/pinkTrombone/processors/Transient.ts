@@ -1,5 +1,12 @@
 class Transient {
-    constructor(position, seconds) {
+    private position: number;
+    private startTime: number;
+    private timeAlive: number;
+    private lifetime: number;
+    private strength: number;
+    private exponent: number;
+
+    constructor(position: number, seconds: number) {
         this.position = position;
 
         this.startTime = seconds;
@@ -18,7 +25,7 @@ class Transient {
         return this.timeAlive < this.lifetime;
     }
 
-    update(seconds) {
+    public update(seconds: number) {
         this.timeAlive = seconds - this.startTime;
     }
 }
