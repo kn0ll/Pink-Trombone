@@ -3,8 +3,11 @@
         *
 */
 
-import ParameterDescriptors, { numberOfConstrictions } from "./processors/ParameterDescriptors.ts";
-import Processor from "./processors/Processor.ts";
+// @ts-nocheck
+import ParameterDescriptors, { numberOfConstrictions } from "./processors/ParameterDescriptors";
+import Processor from "./processors/Processor";
+
+type Constriction = any;
 
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
@@ -25,7 +28,7 @@ function setupNode(audioNode) {
         };
     }
 
-    audioNode.newConstriction = function(index, diameter) {
+    audioNode.newConstriction = function(index: number, diameter: number) {
         return this._constrictions.find(constriction => {
             if(!constriction._isEnabled) {
                 if(index !== undefined)
@@ -40,7 +43,7 @@ function setupNode(audioNode) {
         });
     }
 
-    audioNode.removeConstriction = function(constriction) {
+    audioNode.removeConstriction = function(constriction: Constriction) {
         constriction._disable();
     }
 
@@ -84,7 +87,8 @@ function assignAudioParam(audioNode, audioParam, paramName) {
 
 if(window.AudioWorklet !== undefined) {
     class PinkTromboneNode extends AudioWorkletNode {
-        constructor(audioContext) {
+        constructor(audioContext: AudioContext) {
+            // @ts-ignore
             super(audioContext, "pink-trombone-worklet-processor");
 
             setupNode(this);
@@ -101,7 +105,7 @@ if(window.AudioWorklet !== undefined) {
             }
         }
 
-        _postMessage(eventData) {
+        _postMessage(eventData: UnknownEvent) {
             eventData.id = Math.random();
 
             return new Promise((resolve, reject) => {

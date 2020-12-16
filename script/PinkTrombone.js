@@ -5,7 +5,7 @@
 
 import {} from "./audio/nodes/constantSource/AudioNode"
 import {} from "./audio/nodes/noise/AudioNode";
-import {} from "./audio/nodes/pinkTrombone/AudioNode.js";
+import {} from "./audio/nodes/pinkTrombone/AudioNode.ts";
 
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 

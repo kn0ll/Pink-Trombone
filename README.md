@@ -54,7 +54,7 @@ function myCallback(event) {
 ```
 This method returns a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) once the [AudioWorkletProcessor](https://github.com/zakaton/Pink-Trombone/blob/master/script/audio/nodes/pinkTrombone/processors/WorkletProcessor.js) module is loaded.
 
-7. In the [promise resolution](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then), a [Pink Trombone audio node](https://github.com/zakaton/Pink-Trombone/blob/master/script/audio/nodes/pinkTrombone/AudioNode.js) is created, which you can connect to other audio nodes from the scope of the `<pink-trombone></pink-trombone>` element:
+7. In the [promise resolution](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then), a [Pink Trombone audio node](https://github.com/zakaton/Pink-Trombone/blob/master/script/audio/nodes/pinkTrombone/AudioNode.ts) is created, which you can connect to other audio nodes from the scope of the `<pink-trombone></pink-trombone>` element:
 ```javascript
 function myCallback(event) {
   pinkTromboneElement.setAudioContext(myAudioContext)
@@ -98,7 +98,7 @@ pinkTromboneElement.disableUI();
 
 
 ## 🎛️ Audio Parameters
-The [audio parameters](https://developer.mozilla.org/en-US/docs/Web/API/AudioParam) of the [Pink Trombone audio node](https://github.com/zakaton/Pink-Trombone/blob/master/script/audio/nodes/pinkTrombone/AudioNode.js) can be accessed from the `<pink-trombone></pink-trombone>` element's scope:
+The [audio parameters](https://developer.mozilla.org/en-US/docs/Web/API/AudioParam) of the [Pink Trombone audio node](https://github.com/zakaton/Pink-Trombone/blob/master/script/audio/nodes/pinkTrombone/AudioNode.ts) can be accessed from the `<pink-trombone></pink-trombone>` element's scope:
 
 🎚️ Intensity
 ```javascript
@@ -148,7 +148,7 @@ setVoiceness(0);
 _Later on I may add a `.voiceness` [audio parameter](https://developer.mozilla.org/en-US/docs/Web/API/AudioParam) that automates this - for now I'm just adopting the [original version](https://dood.al/pinktrombone/)_
 
 ## 🎺 Manipulating Vocal Tract Constrictions
-Vocal Tract constrictions comprise of an object containing `.index` and `.diameter` [Audio Parameter](https://developer.mozilla.org/en-US/docs/Web/API/AudioParam) properties that are implicitly connected to the [Pink Trombone audio node](https://github.com/zakaton/Pink-Trombone/blob/master/script/audio/nodes/pinkTrombone/AudioNode.js)
+Vocal Tract constrictions comprise of an object containing `.index` and `.diameter` [Audio Parameter](https://developer.mozilla.org/en-US/docs/Web/API/AudioParam) properties that are implicitly connected to the [Pink Trombone audio node](https://github.com/zakaton/Pink-Trombone/blob/master/script/audio/nodes/pinkTrombone/AudioNode.ts)
 
 To add a vocal tract constriction:
 ```javascript
