@@ -3,21 +3,75 @@
         using tongue as a k-rate constriction
 */
 
+import clamp from "../../../math/clamp";
+import interpolate from "../../../math/interpolate";
 import Nose from "./Nose";
 import Transient from "./Transient";
 
-Math.interpolate = function(interpolation, from, to) {
-    return (from * (1-interpolation)) + (to * (interpolation))
-}
-Math.clamp = function(value, minValue, maxValue) {
-    return (value <= minValue)?
-        minValue :
-        (value < maxValue)?
-            value :
-            maxValue;
+type Constriction = any;
+
+interface Tongue {
+    _diameter: number;
+    _index: number;
+    range: {
+      diameter: {
+        minValue: number;
+        maxValue: number;
+        range: number;
+        center: number;
+        interpolation: (diameterValue: number) => number;
+      };
+      index: {
+        minValue: number;
+        maxValue: number;
+        range: number;
+        center: number;
+        centerOffset: (interpolation: number) => number;
+      };
+    };
+    diameter: number;
+    index: number;
+  }
+
+interface Reflection {
+    value: number;
+    new: number;
 }
 
 class Tract {
+    public length: number;
+    private blade: { start: number };
+    private tip: { start: number };
+    private lip: { start: number; reflection: number };
+    private glottis: { reflection: number };
+    public velum: { target: number };
+    private grid: { offset: number };
+    private right: Float64Array & {
+        junction?: Float64Array;
+        reflection?: Reflection;
+    };
+    private left: Float64Array & {
+        junction?: Float64Array;
+        reflection?: Reflection;
+    };
+    private reflection: Float64Array & {
+        new?: Float64Array;
+    };
+    private amplitude: Float64Array & {
+        max?: Float64Array;
+    };
+    private diameter: Float64Array & {
+        rest?: Float64Array
+    };
+    private nose: Nose;
+    private tongue: Tongue;
+    private transients: any[] & {
+        obstruction?: { last: number; new: number; };
+    };
+    private previousConstrictions: any[] & {
+        tongue?: { index?: number; diameter?: number; };
+    };
+
     constructor(length = 44) {
         this.length = length;
 
@@ -88,7 +142,7 @@ class Tract {
                     },
                     interpolation(diameterValue) {
                         const interpolation = (diameterValue - this.minValue) / this.range;
-                        return Math.clamp(interpolation, 0, 1);
+                        return clamp(interpolation, 0, 1);
                     }
                 },
                 index : {
@@ -112,7 +166,7 @@ class Tract {
                 return this._diameter;
             },
             set diameter(newValue) {
-                this._diameter = Math.clamp(newValue, this.range.diameter.minValue, this.range.diameter.maxValue);
+                this._diameter = clamp(newValue, this.range.diameter.minValue, this.range.diameter.maxValue);
             },
 
             get index() {
@@ -126,8 +180,8 @@ class Tract {
                 const centerOffset = this.range.index.centerOffset(straightenedInterpolation);
 
                 this._index = true?
-                    Math.clamp(newValue, this.range.index.center -centerOffset, this.range.index.center +centerOffset) :
-                    Math.clamp(newValue, this.range.index.minValue, this.range.index.maxValue) ;
+                    clamp(newValue, this.range.index.center -centerOffset, this.range.index.center +centerOffset) :
+                    clamp(newValue, this.range.index.minValue, this.range.index.maxValue) ;
             },
         };
 
@@ -165,7 +219,7 @@ class Tract {
     }
 
     // PROCESS
-    process(parameterSamples, sampleIndex, bufferLength, seconds) {
+    public process(parameterSamples: any, sampleIndex: number, bufferLength: number, seconds: number) {
         this.tongue.diameter = parameterSamples.tongueDiameter;
         this.tongue.index = parameterSamples.tongueIndex;
 
@@ -185,7 +239,7 @@ class Tract {
         return outputSample;
     }
 
-    _processTransients(seconds) {
+    private _processTransients(seconds: number) {
         for(let index = this.transients.length-1; index >= 0; index--) {
             const transient = this.transients[index];
 
@@ -196,7 +250,7 @@ class Tract {
                 this.transients.splice(index, 1);
         }
     }
-    _processConstrictions(constrictions, parameterSamples) {
+    private _processConstrictions(constrictions: Constriction[], parameterSamples: any) {
         for(let index = 0; index < constrictions.length; index++) {
             const constriction = constrictions[index];
             
@@ -206,8 +260,8 @@ class Tract {
                 const noiseScalar = parameterSamples.noiseModulator * 0.66;
                     noise *= noiseScalar;
 
-                const thinness = Math.clamp(8 * (0.7 - constriction.diameter), 0, 1);
-                const openness = Math.clamp(30 * (constriction.diameter - 0.3), 0, 1);
+                const thinness = clamp(8 * (0.7 - constriction.diameter), 0, 1);
+                const openness = clamp(30 * (constriction.diameter - 0.3), 0, 1);
                     const _ness = thinness*openness;
                         noise *= _ness/2;
 
@@ -228,59 +282,59 @@ class Tract {
         }
     }
 
-    _processLips(parameterSamples, bufferInterpolation, updateAmplitudes) {
-        this.right.junction[0] = this.left[0] * this.glottis.reflection + parameterSamples.glottis;
-        this.left.junction[this.length] = this.right[this.length-1] * this.lip.reflection;
+    private _processLips(parameterSamples: any, bufferInterpolation: number, updateAmplitudes: boolean) {
+        this.right.junction![0] = this.left[0] * this.glottis.reflection + parameterSamples.glottis;
+        this.left.junction![this.length] = this.right[this.length-1] * this.lip.reflection;
         
         for(let index = 1; index < this.length; index++) {
-            const interpolation = Math.interpolate(bufferInterpolation, this.reflection[index], this.reflection.new[index]);
+            const interpolation = interpolate(bufferInterpolation, this.reflection[index], this.reflection.new![index]);
             const offset = interpolation * (this.right[index-1] + this.left[index]);
 
-            this.right.junction[index] = this.right[index-1] - offset;
-            this.left.junction[index] = this.left[index] + offset;
+            this.right.junction![index] = this.right[index-1] - offset;
+            this.left.junction![index] = this.left[index] + offset;
         }
 
-        const leftInterpolation = Math.interpolate(bufferInterpolation, this.left.reflection.new, this.left.reflection.value);
-            this.left.junction[ this.nose.start] = leftInterpolation  * this.right[this.nose.start-1] + (leftInterpolation +1) * (this.nose.left[0] + this.left[ this.nose.start  ]);
-        const rightInterpolation = Math.interpolate(bufferInterpolation, this.right.reflection.new, this.right.reflection.value);
-            this.right.junction[this.nose.start] = rightInterpolation * this.left[ this.nose.start  ] + (rightInterpolation+1) * (this.nose.left[0] + this.right[this.nose.start-1]);
-        const noseInterpolation = Math.interpolate(bufferInterpolation, this.nose.reflection.new, this.nose.reflection.value);
-            this.nose.right.junction[0] = noseInterpolation * this.nose.left[0] + (noseInterpolation + 1) * (this.left[this.nose.start] + this.right[this.nose.start-1]);
+        const leftInterpolation = interpolate(bufferInterpolation, this.left.reflection!.new, this.left.reflection!.value);
+            this.left.junction![ this.nose.start] = leftInterpolation  * this.right[this.nose.start-1] + (leftInterpolation +1) * (this.nose.left[0] + this.left[ this.nose.start  ]);
+        const rightInterpolation = interpolate(bufferInterpolation, this.right.reflection!.new, this.right.reflection!.value);
+            this.right.junction![this.nose.start] = rightInterpolation * this.left[ this.nose.start  ] + (rightInterpolation+1) * (this.nose.left[0] + this.right[this.nose.start-1]);
+        const noseInterpolation = interpolate(bufferInterpolation, this.nose.reflection.new!, this.nose.reflection.value!);
+            this.nose.right.junction![0] = noseInterpolation * this.nose.left[0] + (noseInterpolation + 1) * (this.left[this.nose.start] + this.right[this.nose.start-1]);
 
         for(let index = 0; index < this.length; index++) {
-            this.right[index] = this.right.junction[index] * 0.999;
-            this.left[index] = this.left.junction[index+1] * 0.999;
+            this.right[index] = this.right.junction![index] * 0.999;
+            this.left[index] = this.left.junction![index+1] * 0.999;
 
             if(updateAmplitudes) {
                 const sum = Math.abs(this.left[index] + this.right[index]);
 
-                this.amplitude.max[index] = (sum > this.amplitude.max[index])?
+                this.amplitude.max![index] = (sum > this.amplitude.max![index])?
                     sum :
-                    this.amplitude.max[index] * 0.999;
+                    this.amplitude.max![index] * 0.999;
             }
         }
 
         return this.right[this.length-1];;
     }
-    _processNose(parameterSamples, bufferInterpolation, updateAmplitudes) {
-        this.nose.left.junction[this.nose.length] = this.nose.right[this.nose.length-1] * this.lip.reflection;
+    private _processNose(parameterSamples: any, bufferInterpolation: number, updateAmplitudes: boolean) {
+        this.nose.left.junction![this.nose.length] = this.nose.right[this.nose.length-1] * this.lip.reflection;
 
         for(let index = 1; index < this.nose.length; index++) {
             const offset = this.nose.reflection[index] * (this.nose.left[index] + this.nose.right[index-1]);
 
-            this.nose.left.junction[index] = this.nose.left[index] + offset;
-            this.nose.right.junction[index] = this.nose.right[index-1] - offset;
+            this.nose.left.junction![index] = this.nose.left[index] + offset;
+            this.nose.right.junction![index] = this.nose.right[index-1] - offset;
         }
 
         for(let index = 0; index < this.nose.length; index++) {
-            this.nose.left[index] = this.nose.left.junction[index+1] * this.nose.fade;
-            this.nose.right[index] = this.nose.right.junction[index] * this.nose.fade;
+            this.nose.left[index] = this.nose.left.junction![index+1] * this.nose.fade;
+            this.nose.right[index] = this.nose.right.junction![index] * this.nose.fade;
 
             if(updateAmplitudes) {
                 const sum = Math.abs(this.nose.left[index] + this.nose.right[index]);
-                this.nose.amplitude.max[index] = (sum > this.nose.amplitude.max[index])?
+                this.nose.amplitude.max![index] = (sum > this.nose.amplitude.max![index])?
                     sum :
-                    this.nose.amplitude.max[index] * 0.999;
+                    this.nose.amplitude.max![index] * 0.999;
             }
         }
 
@@ -288,7 +342,7 @@ class Tract {
     }
 
     // UPDATE
-    update(seconds, constrictions) {
+    public update(seconds: number, constrictions: Constriction[]) {
         this._updateTract();
 
         this._updateTransients(seconds);
@@ -301,7 +355,7 @@ class Tract {
         this._updateConstrictions(constrictions);
     }
 
-    _updateDiameterRest() {
+    private _updateDiameterRest() {
         for(let index = this.blade.start; index < this.lip.start; index++) {
             const interpolation = (this.tongue.index - index)/(this.tip.start - this.blade.start);
 
@@ -318,14 +372,14 @@ class Tract {
             
             const value = 1.5 - curve;
             
-            this.diameter.rest[index] = value;
+            this.diameter.rest![index] = value;
         }
     }
 
-    _updateConstrictions(constrictions) {
+    private _updateConstrictions(constrictions: Constriction[]) {
         var update = false;
 
-        update = update || (this.tongue.index !== this.previousConstrictions.tongue.index) || (this.tongue.diameter !== this.previousConstrictions.tongue.diameter);
+        update = update || (this.tongue.index !== this.previousConstrictions.tongue!.index) || (this.tongue.diameter !== this.previousConstrictions.tongue!.diameter);
 
         const maxIndex = Math.max(this.previousConstrictions.length, constrictions.length);
         for(let constrictionIndex = 0, A = constrictions[0], B = this.previousConstrictions[0]; !update && constrictionIndex < maxIndex; constrictionIndex++, A = constrictions[constrictionIndex], B = this.previousConstrictions[constrictionIndex]) {
@@ -337,7 +391,7 @@ class Tract {
         if(update) {
             this._updateDiameterRest();
             for(let index = 0; index < this.length; index++) {
-                this.diameter[index] = this.diameter.rest[index];
+                this.diameter[index] = this.diameter.rest![index];
             }
 
             this.velum.target = 0.01;
@@ -394,30 +448,30 @@ class Tract {
         }
     }
 
-    _updateTract() {
+    private _updateTract() {
         for(let index = 0; index < this.length; index++) {
             if(this.diameter[index] <= 0) {
-                this.transients.obstruction.new = index;
+                this.transients.obstruction!.new = index;
             }
         }
     }
 
-    _updateTransients(seconds) {
+    private _updateTransients(seconds: number) {
         if(this.nose.amplitude[0] < 0.05) {
-            if((this.transients.obstruction.last > -1) && (this.transients.obstruction.new == -1))
-                this.transients.push(new Transient(this.transients.obstruction.new, seconds));
+            if((this.transients.obstruction!.last > -1) && (this.transients.obstruction!.new == -1))
+                this.transients.push(new Transient(this.transients.obstruction!.new, seconds));
 
-            this.transients.obstruction.last = this.transients.obstruction.new;
+            this.transients.obstruction!.last = this.transients.obstruction!.new;
         }
     }
 
-    _updateReflection() {
+    private _updateReflection() {
         for(let index = 0; index < this.length; index++) {
             this.amplitude[index] = Math.pow(this.diameter[index], 2);
 
             if(index > 0) {
-                this.reflection[index] = this.reflection.new[index];
-                this.reflection.new[index] = (this.amplitude[index] == 0)?
+                this.reflection[index] = this.reflection.new![index];
+                this.reflection.new![index] = (this.amplitude[index] == 0)?
                     0.999 :
                     (this.amplitude[index-1] - this.amplitude[index]) / (this.amplitude[index-1] + this.amplitude[index]);
             }
@@ -425,26 +479,26 @@ class Tract {
         }
 
         const sum = this.amplitude[this.nose.start] + this.amplitude[this.nose.start+1] + this.nose.amplitude[0];
-            this.left.reflection.value = this.left.reflection.new;
-            this.left.reflection.new = (2 * this.amplitude[this.nose.start] - sum) / sum;
+            this.left.reflection!.value = this.left.reflection!.new;
+            this.left.reflection!.new = (2 * this.amplitude[this.nose.start] - sum) / sum;
 
-            this.right.reflection.value = this.right.reflection.new;
-            this.right.reflection.new = (2 * this.amplitude[this.nose.start + 1] - sum) / sum;
+            this.right.reflection!.value = this.right.reflection!.new;
+            this.right.reflection!.new = (2 * this.amplitude[this.nose.start + 1] - sum) / sum;
 
             this.nose.reflection.value = this.nose.reflection.new;
             this.nose.reflection.new = (2 * this.nose.amplitude[0] - sum) / sum;
     }
 
-    reset() {
+    private reset() {
         this.right.fill(0);
-            this.right.junction.fill(0);
+            this.right.junction!.fill(0);
         this.left.fill(0);
-            this.left.junction.fill(0);
+            this.left.junction!.fill(0);
         
         this.nose.left.fill(0);
-            this.nose.left.junction.fill(0);
+            this.nose.left.junction!.fill(0);
         this.nose.right.fill(0);
-            this.nose.right.junction.fill(0);
+            this.nose.right.junction!.fill(0);
     }
 }
 
