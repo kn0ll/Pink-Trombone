@@ -3,7 +3,7 @@
         *
 */
 
-import ParameterDescriptors from "./processors/ParameterDescriptors.js";
+import ParameterDescriptors, { numberOfConstrictions } from "./processors/ParameterDescriptors.ts";
 import Processor from "./processors/Processor.ts";
 
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -11,7 +11,7 @@ window.AudioContext = window.AudioContext || window.webkitAudioContext;
 // CONSTRUCTOR HELPERS
 function setupNode(audioNode) {
     audioNode._constrictions = [];
-    for(let constrictionIndex = 0; constrictionIndex < ParameterDescriptors.numberOfConstrictions; constrictionIndex++) {
+    for(let constrictionIndex = 0; constrictionIndex < numberOfConstrictions; constrictionIndex++) {
         audioNode._constrictions[constrictionIndex] = {
             _index : constrictionIndex,
 

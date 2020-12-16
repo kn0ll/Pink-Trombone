@@ -3,7 +3,7 @@
         *
 */
 
-import ParameterDescriptors from "./ParameterDescriptors.js";
+import ParameterDescriptors, { numberOfConstrictions } from "./ParameterDescriptors.ts";
 import Processor from "./Processor.ts";
 
 class PinkTromboneWorkletProcessor extends AudioWorkletProcessor {
@@ -61,7 +61,7 @@ class PinkTromboneWorkletProcessor extends AudioWorkletProcessor {
     _getConstrictions(parameters) {
         const constrictions = [];
 
-        for(let constrictionIndex = 0; constrictionIndex < ParameterDescriptors.numberOfConstrictions; constrictionIndex++) {
+        for(let constrictionIndex = 0; constrictionIndex < numberOfConstrictions; constrictionIndex++) {
             if(this.enabledConstrictionIndices[constrictionIndex]) {
                 const prefix = "constriction" + constrictionIndex;
 
