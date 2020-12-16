@@ -1,6 +1,6 @@
 const path = require('path');
 
-const whichFile = "pink-trombone";
+const whichFile = process.env.APP || "component";
 
 module.exports = {
     entry: {
