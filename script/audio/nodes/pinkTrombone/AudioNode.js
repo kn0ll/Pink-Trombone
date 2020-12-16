@@ -3,7 +3,7 @@
         *
 */
 
-import ParameterDescriptors from "./processors/ParameterDescriptors.ts";
+import ParameterDescriptors from "./processors/ParameterDescriptors.js";
 import Processor from "./processors/Processor.ts";
 
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
