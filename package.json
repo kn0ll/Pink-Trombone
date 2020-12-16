@@ -2,10 +2,11 @@
   "name": "pink-trombone",
   "version": "1.0.0",
   "description": "A refactoring of Pink Trombone",
-  "main": "index.js",
+  "main": "lib/component.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "APP=component webpack && APP=pink-trombone webpack && cp build/* .",
+    "dist": "APP=component webpack && APP=pink-trombone webpack && cp dist/* .",
+    "build": "tsc",
     "typecheck": "tsc --noEmit"
   },
   "author": "",

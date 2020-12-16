@@ -6,6 +6,8 @@
 // @ts-nocheck
 import { numberOfConstrictions } from "./processors/ParameterDescriptors";
 
+type UnknownEvent = any;
+
 type Constriction = any;
 
 // CONSTRUCTOR HELPERS

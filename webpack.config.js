@@ -13,7 +13,7 @@ module.exports = {
         // app: './script/audio/nodes/pinkTrombone/processors/WorkletProcessor.js'
     },
     output: {
-        path: path.resolve(__dirname, 'build'),
+        path: path.resolve(__dirname, 'dist'),
         filename : {
             "component" : 'pink-trombone.min.js',
             "pink-trombone" : 'pink-trombone-worklet-processor.min.js',
