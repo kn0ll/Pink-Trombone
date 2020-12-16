@@ -3,7 +3,7 @@
         using tongue as a k-rate constriction
 */
 
-import Nose from "./Nose.js";
+import Nose from "./Nose";
 import Transient from "./Transient.js";
 
 Math.interpolate = function(interpolation, from, to) {

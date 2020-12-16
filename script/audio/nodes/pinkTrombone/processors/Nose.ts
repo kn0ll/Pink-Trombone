@@ -3,8 +3,29 @@
         *
 */
 
+type Tract = any;
+
 class Nose {
-    constructor(tract) {
+    public length: number;
+    public start: number;
+    public fade: number;
+    public offset: number;
+    public left: Float64Array & {
+        junction?: Float64Array;
+    };
+    public right: Float64Array & {
+        junction?: Float64Array;
+    };
+    public reflection: Float64Array & {
+        value?: number;
+        new?: number;
+    };
+    public diameter: Float64Array;
+    public amplitude: Float64Array & {
+        max?: Float64Array;
+    };
+
+    constructor(tract: Tract) {
         this.length = Math.floor(28 * tract.length / 44);
 
         this.start = tract.length - this.length + 1;
