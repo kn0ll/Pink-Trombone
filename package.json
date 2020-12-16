@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build-component": "APP=component webpack",
-    "build-pink-trombone": "APP=pink-trombone webpack",
+    "build": "webpack",
+    "package": "APP=component webpack && APP=pink-trombone webpack && cp build/* .",
     "typecheck": "tsc --noEmit"
   },
   "author": "",
