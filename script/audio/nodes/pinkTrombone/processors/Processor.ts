@@ -4,20 +4,27 @@
 */
 
 import Glottis from "./Glottis";
-import Tract from "./Tract.js";
+import Tract from "./Tract";
+
+type Constriction = any;
 
 class Processor {
+    private glottis: Glottis;
+    private tract: Tract;
+
     constructor() {
         this.glottis = new Glottis();
         this.tract = new Tract();
     }
 
-    process(parameterSamples, sampleIndex, bufferLength, seconds) {
+    process(parameterSamples: any, sampleIndex: number, bufferLength: number, seconds: number) {
         var outputSample = 0;
         
+        // @ts-ignore
         const glottisSample = this.glottis.process(...arguments);
         parameterSamples.glottis = glottisSample;
 
+        // @ts-ignore
         outputSample += this.tract.process(...arguments);
             sampleIndex += 0.5; // process twice - note the "...arguments" doesn't read this
         outputSample += this.tract.process(parameterSamples, sampleIndex, bufferLength, seconds);
@@ -27,7 +34,7 @@ class Processor {
         return outputSample;
     }
 
-    update(seconds, constrictions) {
+    update(seconds: number, constrictions: Constriction[]) {
         this.glottis.update();
         this.tract.update(seconds, constrictions);
     }
