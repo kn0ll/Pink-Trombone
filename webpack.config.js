@@ -1,12 +1,12 @@
 const path = require('path');
 
-const whichFile = "component";
+const whichFile = "pink-trombone";
 
 module.exports = {
     entry: {
         app : {
             "component" : './script/component.js',
-            "pink-trombone" : './script/audio/nodes/pinkTrombone/processors/WorkletProcessor.js',
+            "pink-trombone" : './script/audio/nodes/pinkTrombone/processors/WorkletProcessor.ts',
         }[whichFile]
         
         // app: './script/component.js'
