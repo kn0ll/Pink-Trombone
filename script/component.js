@@ -4,7 +4,7 @@
 */
 
 import {} from "./PinkTrombone.js";
-import PinkTromboneUI from "./graphics/PinkTromboneUI.js";
+import PinkTromboneUI from "./graphics/PinkTromboneUI.ts";
 
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 

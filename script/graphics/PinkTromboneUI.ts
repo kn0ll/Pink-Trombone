@@ -3,11 +3,18 @@
         .setFreqeuncyRange(min, max)
 */
 
-import TractUI from "./TractUI.ts";
-import GlottisUI from "./GlottisUI.ts";
-import ButtonsUI from "./ButtonsUI.ts";
+import TractUI from "./TractUI";
+import GlottisUI from "./GlottisUI";
+import ButtonsUI from "./ButtonsUI";
+
+type UnknownEvent = any;
 
 class PinkTromboneUI {
+    private _tractUI: TractUI;
+    private _glottisUI: GlottisUI;
+    private _buttonsUI: ButtonsUI;
+    private _container: HTMLDivElement;
+
     constructor() {
         this._tractUI = new TractUI();
         this._glottisUI = new GlottisUI();
@@ -34,11 +41,11 @@ class PinkTromboneUI {
             
             this._container.appendChild(this._buttonsUI.node);
                 this._buttonsUI.node.id = "buttonsUI";
-                this._buttonsUI.node.style.zIndex = 1;
+                this._buttonsUI.node.style.zIndex = "1";
                 this._buttonsUI.node.style.gridColumn = "2";
                 this._buttonsUI.node.style.gridRow = "2";
             
-            this._container.addEventListener("message", event => {
+            this._container.addEventListener("message", (event: UnknownEvent) => {
                 event.stopPropagation();
                 Array.from(this._container.children).forEach(child => {
                     if(child !== event.target) {
