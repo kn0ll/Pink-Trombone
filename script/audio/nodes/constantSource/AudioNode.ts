@@ -3,7 +3,44 @@
         define custom value setters
 */
 
-Math.clamp = function(value, min, max) {
+declare global {
+    interface Window {
+        webkitAudioContext: typeof AudioContext;
+    }
+    interface AudioContext {
+        createConstantSource: () => ConstantSourceScriptProcessorNode;
+    }
+}
+
+type InterpolationMode = "none" | "linear";
+
+interface ConstantSourceScriptProcessorNode extends ScriptProcessorNode {
+    _isRunning: boolean;
+    _audioContext: AudioContext;
+    offset: ScriptProcessorNode;
+    _interpolationMode: InterpolationMode;
+    __interpolationMode: InterpolationMode;
+    _startValue: number;
+    _targetValue: number;
+    _startTime: number;
+    _targetTime: number;
+    _duration: number;
+    minValue: number;
+    maxValue: number;
+    _clamp: (newValue: number) => number;
+    _update: VoidFunction;
+    _value: number;
+    value: number;
+    linearRampToValueAtTime: (value: number, time: number) => void;
+    exponentialRampToValueAtTime: (value: number, time: number) => void;
+    setTargetAtTime: (value: number, time: number, timeConstant: number) => void;
+    setValueAtTime: (value: number, time: number) => void;
+    setValueCurveAtTime: (value: number, time: number, duration: number) => void;
+    start: VoidFunction;
+    stop: VoidFunction;
+}
+
+function clamp(value: number, min: number, max: number) {
     return value <= min?
     min :
     value < max?
@@ -11,8 +48,8 @@ Math.clamp = function(value, min, max) {
         max;
 }
 
-Math.interpolate = function(interpolation, from, to) {
-    interpolation = Math.clamp(interpolation, 0, 1);
+function interpolate(interpolation: number, from: number, to: number) {
+    interpolation = clamp(interpolation, 0, 1);
     return (from * (1 - interpolation)) + (to * (interpolation));
 }
 
@@ -21,7 +58,7 @@ window.AudioContext = window.AudioContext || window.webkitAudioContext;
 if(window.AudioContext.prototype.createConstantSource == undefined) {
     window.AudioContext.prototype.createConstantSource = function() {
         
-        const constantSourceNode = this.createScriptProcessor(Math.pow(2, 14), 1, 1);
+        const constantSourceNode = this.createScriptProcessor(Math.pow(2, 14), 1, 1) as ConstantSourceScriptProcessorNode;
         constantSourceNode._isRunning = false;
         constantSourceNode._audioContext = this;
         constantSourceNode.offset = constantSourceNode;
@@ -47,7 +84,7 @@ if(window.AudioContext.prototype.createConstantSource == undefined) {
         constantSourceNode.minValue = -3.402820018375656e+38;
         constantSourceNode.maxValue = +3.402820018375656e+38;
         constantSourceNode._clamp = function(newValue) {
-            return Math.clamp(newValue, this.minValue, this.maxValue);
+            return clamp(newValue, this.minValue, this.maxValue);
         }
 
         constantSourceNode._update = function() {
@@ -65,9 +102,9 @@ if(window.AudioContext.prototype.createConstantSource == undefined) {
                         break;
                 }
 
-                interpolation = Math.clamp(interpolation, 0, 1);
+                interpolation = clamp(interpolation, 0, 1);
 
-                this._value = this._clamp(Math.interpolate(interpolation, this._startValue, this._targetValue));
+                this._value = this._clamp(interpolate(interpolation, this._startValue, this._targetValue));
                 
                 if(interpolation >= 1)
                     this._interpolationMode = "none";
@@ -81,7 +118,7 @@ if(window.AudioContext.prototype.createConstantSource == undefined) {
             },
             set : function(newValue) {
                 this._interpolationMode = "none";
-                this._value = Math.clamp(newValue, this.minValue, this.maxValue);
+                this._value = clamp(newValue, this.minValue, this.maxValue);
             },
         });
 
@@ -116,14 +153,15 @@ if(window.AudioContext.prototype.createConstantSource == undefined) {
             return this;
         }
 
+        const self = constantSourceNode;
         constantSourceNode.onaudioprocess = function(event) {
             const inputChannel = event.inputBuffer.getChannelData(0);
             const outputChannel = event.outputBuffer.getChannelData(0);
 
-            if(this._isRunning)
+            if(self._isRunning)
                 for(let sampleIndex = 0; sampleIndex < outputChannel.length; sampleIndex++) {
-                    this._update();
-                    outputChannel[sampleIndex] = inputChannel[sampleIndex] + this.value;
+                    self._update();
+                    outputChannel[sampleIndex] = inputChannel[sampleIndex] + self.value;
                 }
         }
 

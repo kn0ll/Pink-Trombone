@@ -8,7 +8,7 @@ declare global {
         webkitAudioContext: typeof AudioContext;
     }
     interface AudioContext {
-        createNoise: () => void;
+        createNoise: () => AudioBufferSourceNode;
     }
 }
 
