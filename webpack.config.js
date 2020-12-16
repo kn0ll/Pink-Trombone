@@ -31,6 +31,9 @@ module.exports = {
             query: {
                 presets: ['@babel/env']
             }
+        }, {
+            test: /\.ts$/,
+            loader: "ts-loader"
         }]
     }
 }
