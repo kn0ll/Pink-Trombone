@@ -3,7 +3,7 @@
         .setFreqeuncyRange(min, max)
 */
 
-import TractUI from "./TractUI.js";
+import TractUI from "./TractUI.ts";
 import GlottisUI from "./GlottisUI.ts";
 import ButtonsUI from "./ButtonsUI.ts";
 
