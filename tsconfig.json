@@ -2,6 +2,6 @@
     "compilerOptions": {
         "strict": true,
         "lib": ["DOM", "ES2016"],
-        "target": "ES5"
+        "target": "ES6"
     }
 }
