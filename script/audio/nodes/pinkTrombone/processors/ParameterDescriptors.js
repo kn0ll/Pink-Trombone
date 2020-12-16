@@ -59,9 +59,9 @@ const ParameterDescriptors = [
     },
 ];
 
-export const numberOfConstrictions = 4;
+ParameterDescriptors.numberOfConstrictions = 4;
 
-for(let index = 0; index < numberOfConstrictions; index++) {
+for(let index = 0; index < ParameterDescriptors.numberOfConstrictions; index++) {
     const constrictionParameterDescriptors = [
         {
             name : "constriction" + index + "index",
