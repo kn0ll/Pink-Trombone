@@ -3,8 +3,8 @@
         start/stop for the pinkTromboneNode
 */
 
-import {} from "./audio/nodes/constantSource/AudioNode.ts"
-import {} from "./audio/nodes/noise/AudioNode.ts";
+import {} from "./audio/nodes/constantSource/AudioNode"
+import {} from "./audio/nodes/noise/AudioNode";
 import {} from "./audio/nodes/pinkTrombone/AudioNode.js";
 
 window.AudioContext = window.AudioContext || window.webkitAudioContext;

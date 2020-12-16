@@ -3,8 +3,8 @@
         *
 */
 
-import clamp from "../../../math/clamp.ts";
-import SimplexNoise from "./SimplexNoise.ts";
+import clamp from "../../../math/clamp";
+import SimplexNoise from "./SimplexNoise";
 
 class Glottis {
     private noise: SimplexNoise;
