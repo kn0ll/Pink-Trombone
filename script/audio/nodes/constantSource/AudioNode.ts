@@ -3,6 +3,9 @@
         define custom value setters
 */
 
+import clamp from "../../math/clamp";
+import interpolate from "../../math/interpolate";
+
 declare global {
     interface Window {
         webkitAudioContext: typeof AudioContext;
@@ -38,19 +41,6 @@ interface ConstantSourceScriptProcessorNode extends ScriptProcessorNode {
     setValueCurveAtTime: (value: number, time: number, duration: number) => void;
     start: VoidFunction;
     stop: VoidFunction;
-}
-
-function clamp(value: number, min: number, max: number) {
-    return value <= min?
-    min :
-    value < max?
-        value :
-        max;
-}
-
-function interpolate(interpolation: number, from: number, to: number) {
-    interpolation = clamp(interpolation, 0, 1);
-    return (from * (1 - interpolation)) + (to * (interpolation));
 }
 
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
