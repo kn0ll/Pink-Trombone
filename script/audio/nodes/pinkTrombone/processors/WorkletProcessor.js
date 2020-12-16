@@ -3,7 +3,7 @@
         *
 */
 
-import ParameterDescriptors from "./ParameterDescriptors.js";
+import ParameterDescriptors from "./ParameterDescriptors.ts";
 import Processor from "./Processor.ts";
 
 class PinkTromboneWorkletProcessor extends AudioWorkletProcessor {

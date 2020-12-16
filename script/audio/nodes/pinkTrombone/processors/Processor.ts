@@ -4,6 +4,7 @@
 */
 
 import Glottis from "./Glottis";
+// @ts-ignore
 import Tract from "./Tract";
 
 type Constriction = any;
