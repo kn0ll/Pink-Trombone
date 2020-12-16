@@ -18,10 +18,10 @@ class PinkTrombone {
     private _pinkTromboneNode?: PinkTromboneNode;
     private _gain?: GainNode;
 
-    private addModules(audioContext: AudioContext) {
+    private addModules(audioContext: AudioContext, workletPath: string) {
         if(audioContext.audioWorklet !== undefined) {
             //return audioContext.audioWorklet.addModule("./script/audio/nodes/pinkTrombone/processors/WorkletProcessor.js")
-            return audioContext.audioWorklet.addModule("./pink-trombone-worklet-processor.min.js");
+            return audioContext.audioWorklet.addModule(workletPath);
         }
         else {
             return new Promise<void>((resolve, reject) => {
@@ -30,10 +30,10 @@ class PinkTrombone {
         }
     }
 
-    constructor(audioContext: AudioContext) {
+    constructor(audioContext: AudioContext, workletPath: string) {
         this.audioContext = audioContext;
         this.loadPromise = 
-            this.addModules(audioContext)
+            this.addModules(audioContext, workletPath)
                 .then(() => {
                     this.audioContext = audioContext;
                     this.setupAudioGraph();

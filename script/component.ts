@@ -204,8 +204,8 @@ class PinkTromboneElement extends HTMLElement {
         }
     }
 
-    setAudioContext(audioContext = new AudioContext()) {
-        this.pinkTrombone = new PinkTrombone(audioContext);
+    setAudioContext(audioContext = new AudioContext(), workletPath = "./pink-trombone-worklet-processor.min.js") {
+        this.pinkTrombone = new PinkTrombone(audioContext, workletPath);
 
         this.loadPromise = this.pinkTrombone.loadPromise
             .then(audioContext => {
