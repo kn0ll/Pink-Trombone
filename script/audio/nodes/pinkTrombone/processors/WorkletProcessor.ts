@@ -3,17 +3,22 @@
         *
 */
 
-import ParameterDescriptors, { numberOfConstrictions } from "./ParameterDescriptors.ts";
-import Processor from "./Processor.ts";
+import ParameterDescriptors, { numberOfConstrictions } from "./ParameterDescriptors";
+import Processor from "./Processor";
 
+// @ts-ignore
 class PinkTromboneWorkletProcessor extends AudioWorkletProcessor {
+    private processor: Processor;
+    private enabledConstrictionIndices: any[];
+    private port: any;
+
     constructor() {
         super();
 
         this.processor = new Processor();
         this.enabledConstrictionIndices = [];
 
-        this.port.onmessage = (event) => {
+        this.port.onmessage = (event: any) => {
             switch(event.data.name) {
                 case "enableConstriction":
                     this.enabledConstrictionIndices[event.data.constrictionIndex] = true;
@@ -43,11 +48,11 @@ class PinkTromboneWorkletProcessor extends AudioWorkletProcessor {
         return ParameterDescriptors;
     }
 
-    _getParameterSamples(parameters, sampleIndex) {
-        const parameterSamples = {};
+    private _getParameterSamples(parameters: any, sampleIndex: number) {
+        const parameterSamples: any = {};
 
-        for(let parameterDescriptorIndex = 0; parameterDescriptorIndex < this.constructor.parameterDescriptors.length; parameterDescriptorIndex++) {
-            const parameterDescriptor = this.constructor.parameterDescriptors[parameterDescriptorIndex];
+        for(let parameterDescriptorIndex = 0; parameterDescriptorIndex < PinkTromboneWorkletProcessor.parameterDescriptors.length; parameterDescriptorIndex++) {
+            const parameterDescriptor = PinkTromboneWorkletProcessor.parameterDescriptors[parameterDescriptorIndex];
             if(!parameterDescriptor.name.includes("constriction")) {
                 parameterSamples[parameterDescriptor.name] = (parameters[parameterDescriptor.name].length == 1)?
                     parameters[parameterDescriptor.name][0] :
@@ -58,7 +63,7 @@ class PinkTromboneWorkletProcessor extends AudioWorkletProcessor {
         return parameterSamples;
     }
 
-    _getConstrictions(parameters) {
+    private _getConstrictions(parameters: any) {
         const constrictions = [];
 
         for(let constrictionIndex = 0; constrictionIndex < numberOfConstrictions; constrictionIndex++) {
@@ -77,13 +82,14 @@ class PinkTromboneWorkletProcessor extends AudioWorkletProcessor {
         return constrictions;
     }
 
-    process(inputs, outputs, parameters) {
+    public process(inputs: any, outputs: any, parameters: any) {
         const constrictions = this._getConstrictions(parameters);
 
         for(let outputIndex = 0; outputIndex < outputs.length; outputIndex++) {
             for(let channelIndex = 0; channelIndex < outputs[outputIndex].length; channelIndex++) {
                 for(let sampleIndex = 0; sampleIndex < outputs[outputIndex][channelIndex].length; sampleIndex++) {                    
                     const parameterSamples = this._getParameterSamples(parameters, sampleIndex);
+                    // @ts-ignore
                     const seconds = currentTime + (sampleIndex/sampleRate);
                     const outputSample = this.processor.process(parameterSamples, sampleIndex, outputs[outputIndex][channelIndex].length, seconds);
 
@@ -92,10 +98,12 @@ class PinkTromboneWorkletProcessor extends AudioWorkletProcessor {
             }
         }
                 
+        // @ts-ignore
         this.processor.update(currentTime + (outputs[0][0].length/sampleRate), constrictions);
 
         return true;
     }
 }
 
+// @ts-ignore
 registerProcessor("pink-trombone-worklet-processor", PinkTromboneWorkletProcessor);
