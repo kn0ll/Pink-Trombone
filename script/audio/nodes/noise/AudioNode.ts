@@ -3,6 +3,15 @@
         .type property that allows for different noise types (white noise, pink noise, etc)
 */
 
+declare global {
+    interface Window {
+        webkitAudioContext: typeof AudioContext;
+    }
+    interface AudioContext {
+        createNoise: () => void;
+    }
+}
+
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
 window.AudioContext.prototype.createNoise = function() {
@@ -13,7 +22,7 @@ window.AudioContext.prototype.createNoise = function() {
     const buffer = this.createBuffer(1, seconds*this.sampleRate, this.sampleRate);
     const bufferChannel = buffer.getChannelData(0);
     for(let sampleIndex = 0; sampleIndex < bufferChannel.length; sampleIndex++)
-        bufferChannel[sampleIndex] = ((Math.random(0) *2) -1);
+        bufferChannel[sampleIndex] = ((Math.random() *2) -1);
 
     noiseNode.buffer = buffer;
     noiseNode.loop = true;
